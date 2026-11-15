@@ -163,6 +163,10 @@
     -webkit-user-drag: none;
   }
   .polaroid .photo.loaded { opacity: 1; }
+  @media (max-width: 700px) {
+    .polaroid { box-shadow: 0 3px 6px rgba(0,0,0,.35); }
+    .polaroid.dragging { box-shadow: 0 8px 14px rgba(0,0,0,.4); }
+  }
 </style>
 </head>
 <body>
@@ -176,10 +180,11 @@
 
 <script>
 (function(){
-  var COUNT = 60;                       // polaroids on screen (photos repeat to fill this)
+  var MOBILE = window.matchMedia("(max-width: 700px)").matches;
+  var COUNT = MOBILE ? 24 : 60;         // polaroids at the start (photos repeat to fill this)
   var SOLID_SHARE = 0.65;               // share that bump into each other; the rest overlap freely
-  var SPAWN_DELAY = [385, 920];       // ms between new polaroids (the stream never stops)
-  var MAX_ITEMS = 70;                   // most polaroids on screen at once
+  var SPAWN_DELAY = MOBILE ? [900, 1800] : [385, 920];  // ms between new polaroids (the stream never stops)
+  var MAX_ITEMS = MOBILE ? 60 : 150;    // safety limit; the stream slows only if it is ever reached
   var SPAWN_MARGIN = 80;                // px above the top edge where new polaroids start
   var HOLD_GROW = 1.12;                 // a held polaroid is this many times bigger
   var PHOTO_FOLDER = "polaroid/";
@@ -209,11 +214,26 @@
   var spawnCount = 0;
 
   function rand(a, b){ return a + Math.random() * (b - a); }
-  // Horizontal position across the whole screen, weighted toward the left.
-  // Polaroids snap to columns (about one polaroid wide), weighted toward the left, so they stack tightly.
+  // Columns about one polaroid wide. New polaroids take turns across the columns (so none pile up),
+  // with the left-hand columns getting a few more turns.
+  var columnOrder = [], columnCount = 0, columnTurn = 0;
+  function buildColumnOrder(cols){
+    columnCount = cols;
+    columnOrder = [];
+    for (var c = 0; c < cols; c++){
+      var turns = 1 + Math.round(2 * (1 - c / cols));
+      for (var r = 0; r < turns; r++) columnOrder.push(c);
+    }
+    for (var i = columnOrder.length - 1; i > 0; i--){
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = columnOrder[i]; columnOrder[i] = columnOrder[j]; columnOrder[j] = t;
+    }
+    columnTurn = 0;
+  }
   function randX(){
     var cols = Math.max(1, Math.floor(W / (base * 0.9)));
-    var k = Math.min(cols - 1, Math.floor(cols * Math.pow(Math.random(), 1.5)));
+    if (cols !== columnCount) buildColumnOrder(cols);
+    var k = columnOrder[columnTurn++ % columnOrder.length];
     return (k + 0.5) * W / cols + rand(-base * 0.06, base * 0.06);
   }
 
@@ -251,6 +271,7 @@
     img.className = "photo";
     img.alt = "";
     img.draggable = false;
+    img.decoding = "async";
     ph.appendChild(img);
     el.appendChild(ph);
     stage.appendChild(el);
@@ -320,12 +341,13 @@
   }
 
   function scheduleSpawn(){
-    setTimeout(spawnItem, rand(SPAWN_DELAY[0], SPAWN_DELAY[1]));
+    // Near the limit the stream slows down instead of stopping.
+    var slow = items.length >= MAX_ITEMS ? 3 : 1;
+    setTimeout(spawnItem, rand(SPAWN_DELAY[0], SPAWN_DELAY[1]) * slow);
   }
 
   // A new polaroid falls in from above the top edge.
   function spawnItem(){
-    if (items.length >= MAX_ITEMS){ scheduleSpawn(); return; }
     var it = makeItem(spawnCount++);
     it.solid = true;
     it.entering = true;
