@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>11 ACAD D1 - About</title>
+<meta name="description" content="About our section and students.">
+<link rel="icon" type="image/png" href="./favicon.png">
+
+<style>
+  html { background: #05060a; }
+  html, body { margin: 0; padding: 0; height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
+    color: #f5f5f7;
+    position: relative;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+
+  /* Blurred aurora confined to the top of the viewport, fading into a dark base beneath it (same as index.html) */
+  body::before { content: ""; position: fixed; z-index: -2; inset: 0; pointer-events: none; background: #05060a; }
+  body::after {
+    content: "";
+    position: fixed;
+    z-index: -1;
+    left: -22%;
+    right: -22%;
+    top: -22%;
+    height: 85vh;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse at 15% 16%, rgba(111,20,63,.78) 0%, rgba(111,20,63,0) 42%),
+      radial-gradient(ellipse at 79% 18%, rgba(112,65,31,.72) 0%, rgba(112,65,31,0) 39%),
+      radial-gradient(ellipse at 18% 78%, rgba(43,23,112,.88) 0%, rgba(43,23,112,0) 43%),
+      radial-gradient(ellipse at 78% 78%, rgba(12,49,72,.82) 0%, rgba(12,49,72,0) 42%),
+      radial-gradient(ellipse at 49% 45%, rgba(63,22,64,.38) 0%, rgba(63,22,64,0) 45%),
+      linear-gradient(145deg, #21101d 0%, #151022 48%, #081722 100%);
+    background-size: 145% 145%;
+    background-position: 50% 30%;
+    filter: blur(62px) saturate(125%);
+    opacity: .96;
+    -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 45%, transparent 92%);
+    mask-image: linear-gradient(to bottom, #000 0%, #000 45%, transparent 92%);
+    transform: translate3d(0,0,0);
+    animation: auroraDrift 22s ease-in-out infinite alternate;
+  }
+  /* Driven purely by transform (no background-position) so the browser only
+     has to recomposite an already-blurred layer each frame, not re-blur it. */
+  @keyframes auroraDrift {
+    0% { transform: translate3d(-3%,1%,0) scale(1.05); }
+    35% { transform: translate3d(3%,-1.5%,0) scale(1.12); }
+    70% { transform: translate3d(-1.5%,2%,0) scale(1.08); }
+    100% { transform: translate3d(2.5%,-0.5%,0) scale(1.14); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    body::after { animation: none; }
+  }
+  @media (max-width: 700px) {
+    /* Keep the aurora still on phones to reduce ongoing GPU work. */
+    body::after {
+      animation: none;
+      transform: translate3d(-1%, 0.5%, 0) scale(1.08);
+      will-change: auto;
+    }
+  }
+
+  /* Back button, same style as the attendance page */
+  .back-btn {
+    position: fixed;
+    z-index: 1000;
+    top: calc(16px + env(safe-area-inset-top, 0px));
+    left: max(20px, env(safe-area-inset-left, 0px));
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    color: #0a84ff;
+    background: rgba(22,24,35,.72);
+    border: 1px solid rgba(255,255,255,.12);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    text-decoration: none;
+  }
+  .back-btn svg { width: 18px; height: 18px; display: block; }
+  .back-btn:active { background: rgba(120,120,128,.24); }
+  @media (max-width: 700px) {
+    .back-btn { -webkit-backdrop-filter: none; backdrop-filter: none; background: #1c1c1e; }
+  }
+
+  /* Polaroids: positioned and rotated by the physics script, draggable */
+  /* Polaroids use the whole screen; the frosted panel sits over part of them */
+  #stage { position: fixed; left: 0; top: 0; width: 100%; height: 100%; z-index: 1; overflow: hidden; }
+  /* Frosted panel: right half on desktop, bottom half on mobile */
+  #panel {
+    position: fixed;
+    right: 0;
+    top: 0;
+    width: 50%;
+    height: 100%;
+    z-index: 2;
+    background: rgba(10,11,17,.5);
+    border-left: 1px solid rgba(255,255,255,.12);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+  }
+  @media (max-width: 700px) {
+    #panel {
+      left: 0;
+      right: auto;
+      top: auto;
+      bottom: 0;
+      width: 100%;
+      height: 50%;
+      border-left: 0;
+      border-top: 1px solid rgba(255,255,255,.08);
+      background: #07080d;
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+    }
+  }
+  .polaroid {
+    position: absolute;
+    left: 0;
+    top: 0;
+    box-sizing: border-box;
+    background: #fdfdfb;
+    border-radius: 4px;
+    box-shadow: 0 12px 26px rgba(0,0,0,.45), 0 2px 5px rgba(0,0,0,.3);
+    will-change: transform;
+    cursor: grab;
+    touch-action: none;
+  }
+  .polaroid.dragging {
+    cursor: grabbing;
+    box-shadow: 0 22px 40px rgba(0,0,0,.55), 0 4px 10px rgba(0,0,0,.3);
+  }
+  .polaroid .placeholder {
+    width: 100%;
+    border-radius: 2px;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+
+<a class="back-btn" href="index.html" aria-label="Back to home">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+</a>
+
+<div id="stage" aria-label="Polaroid photos"></div>
+<div id="panel" aria-hidden="true"></div>
+
+<script>
+(function(){
+  // TEMPORARY: gradient placeholders instead of photos.
+  var COUNT = 28;                       // polaroids on screen at the start
+  var SOLID_SHARE = 0.65;               // share that bump into each other; the rest overlap freely
+  var SPAWN_DELAY = [1500, 4000];       // ms before a replacement slides in
+  var SPAWN_MARGIN = 80;                // px beyond the edge where new polaroids start
+  var HOLD_GROW = 1.12;                 // a held polaroid is this many times bigger
+  var GRADIENTS = [
+    "linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%)",
+    "linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)",
+    "linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)",
+    "linear-gradient(135deg, #fccb90 0%, #d57eeb 100%)",
+    "linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%)",
+    "linear-gradient(135deg, #f6d365 0%, #fda085 100%)",
+    "linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%)",
+    "linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)",
+    "linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%)",
+    "linear-gradient(135deg, #cfd9df 0%, #e2ebf0 100%)",
+    "linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%)",
+    "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)"
+  ];
+  // Picture shapes (width / height). Each polaroid's frame grows to fit its shape.
+  var RATIOS = [1, 0.8, 1.25, 0.75, 1.5, 0.66];
+
+  // Ice physics tuning
+  var FRICTION = 0.5;       // share of linear speed kept per second (low = slippery)
+  var SPIN_FRICTION = 0.35; // share of spin kept per second
+  var STOP_SPEED = 4;       // px/s below which a polaroid comes to rest
+  var STOP_SPIN = 2;        // deg/s below which spin stops
+  var PAIR_BOUNCE = 0.6;    // energy kept after hitting another polaroid
+  var MAX_SPEED = 900;      // px/s cap
+  var FALL_MIN = 15;        // px/s slowest fall (rain)
+  var FALL_MAX = 30;        // px/s fastest fall (rain)
+  var UPRIGHT_K = 6;        // how strongly a polaroid springs back to level
+  var UPRIGHT_D = 3;        // damping on that spring
+  var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var stage = document.getElementById("stage");
+  var items = [];
+  var W = 0, H = 0, base = 0;
+  var topZ = 10;
+  var spawnCount = 0;
+
+  function rand(a, b){ return a + Math.random() * (b - a); }
+  // Horizontal position across the whole screen, weighted toward the left.
+  function randX(){
+    return W * Math.pow(Math.random(), 1.7);
+  }
+
+  // Frame size from the item's scale, shape and hold growth. Scales with the window.
+  function applySize(it){
+    var FW = base * it.s * it.g;
+    var pad = FW * 0.06;
+    var imgW = FW - pad * 2;
+    var imgH = imgW / it.ratio;
+    var FH = pad + imgH + FW * 0.22;
+    it.FW = FW; it.FH = FH;
+    it.m = FW * FH;                          // mass
+    it.rad = 0.5 * Math.hypot(FW, FH) * 0.8; // collision radius
+    it.el.style.width = FW + "px";
+    it.el.style.height = FH + "px";
+    it.el.style.padding = pad + "px " + pad + "px " + (FW * 0.22) + "px";
+    it.ph.style.height = imgH + "px";
+  }
+
+  // Half-size of the rotated frame's bounding box.
+  function halfExtents(it){
+    var r = it.a * Math.PI / 180;
+    var c = Math.abs(Math.cos(r)), s = Math.abs(Math.sin(r));
+    return { hw: (c * it.FW + s * it.FH) / 2, hh: (s * it.FW + c * it.FH) / 2 };
+  }
+
+  // Creates one polaroid's element and state (not yet positioned or added to the list).
+  function makeItem(i){
+    var el = document.createElement("div");
+    el.className = "polaroid";
+    el.style.zIndex = Math.floor(rand(1, 9));
+    var ph = document.createElement("div");
+    ph.className = "placeholder";
+    ph.style.background = GRADIENTS[i % GRADIENTS.length];
+    el.appendChild(ph);
+    stage.appendChild(el);
+
+    var it = {
+      el: el, ph: ph,
+      ratio: RATIOS[i % RATIOS.length],
+      s: rand(0.6, 1.4),
+      g: 1,
+      solid: Math.random() < SOLID_SHARE,
+      x: 0, y: 0, tilt: rand(-9, 9), a: 0,
+      fall: rand(FALL_MIN, FALL_MAX),
+      vx: 0, vy: 0, om: rand(-10, 10),
+      dragging: false, drag: null,
+      entered: false,
+      entering: false,
+      FW: 1, FH: 1, m: 1, rad: 1
+    };
+    it.a = it.tilt;
+    attachDrag(it);
+    return it;
+  }
+
+  // Sizes follow the window; positions keep their relative place when the window changes.
+  function layout(){
+    var oldW = W, oldH = H;
+    W = stage.clientWidth;
+    H = stage.clientHeight;
+    base = Math.min(260, Math.max(56, Math.sqrt(W * H) * 0.11));
+    items.forEach(function(it){
+      if (oldW){ it.x *= W / oldW; it.y *= H / oldH; }
+      applySize(it);
+    });
+  }
+
+  // Scatter the polaroids across the screen: each new one goes where it is farthest from the others.
+  function place(){
+    var placed = [];
+    items.forEach(function(it){
+      var best = null, bestScore = -Infinity;
+      for (var t = 0; t < 40; t++){
+        var x = randX(), y = rand(0, H), score = Infinity;
+        placed.forEach(function(p){
+          var gap = Math.hypot(x - p.x, y - p.y) - (it.rad + p.rad);
+          if (gap < score) score = gap;
+        });
+        if (score > bestScore){ bestScore = score; best = { x: x, y: y }; }
+      }
+      it.x = best.x; it.y = best.y;
+      it.vx = 0; it.vy = it.fall;
+      placed.push(it);
+    });
+  }
+
+  // Solid polaroids push each other apart; non-solid ones overlap freely.
+  // A dragged polaroid has infinite mass, so it pushes the others but is not pushed.
+  function collide(a, b){
+    if (!a.solid || !b.solid) return;
+    var ia = a.dragging ? 0 : 1 / a.m;
+    var ib = b.dragging ? 0 : 1 / b.m;
+    var tot = ia + ib;
+    if (tot === 0) return;
+
+    var dx = b.x - a.x, dy = b.y - a.y;
+    var d = Math.hypot(dx, dy);
+    var min = a.rad + b.rad;
+    if (d >= min) return;
+    if (d < 1e-6){ dx = 1; dy = 0; d = 1; }
+    var nx = dx / d, ny = dy / d;
+
+    // Push apart only when clearly overlapping, so resting contacts stay still.
+    var overlap = min - d - 0.5;
+    if (overlap > 0){
+      a.x -= nx * overlap * 0.8 * ia / tot; a.y -= ny * overlap * 0.8 * ia / tot;
+      b.x += nx * overlap * 0.8 * ib / tot; b.y += ny * overlap * 0.8 * ib / tot;
+    }
+
+    var rv = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
+    if (rv < -1){
+      var j = -(1 + PAIR_BOUNCE) * rv / tot;
+      a.vx -= j * nx * ia; a.vy -= j * ny * ia;
+      b.vx += j * nx * ib; b.vy += j * ny * ib;
+      var spin = rand(-40, 40) * Math.min(1, -rv / 200);
+      a.om += spin * ia / tot * 2;
+      b.om -= spin * ib / tot * 2;
+    }
+  }
+
+  function isFullyInside(it){
+    var e = halfExtents(it);
+    return it.x - e.hw >= 0 && it.x + e.hw <= W && it.y - e.hh >= 0 && it.y + e.hh <= H;
+  }
+
+  // The screen edges act as walls for a new polaroid while it is entering; it bounces back if it hits an edge going outward.
+  function bounceEdges(it){
+    var e = halfExtents(it);
+    if (it.x - e.hw < 0 && it.vx < 0){ it.x = e.hw; it.vx = -it.vx * 0.8; it.om += it.vy * 0.25; }
+    if (it.x + e.hw > W && it.vx > 0){ it.x = W - e.hw; it.vx = -it.vx * 0.8; it.om -= it.vy * 0.25; }
+    if (it.y - e.hh < 0 && it.vy < 0){ it.y = e.hh; it.vy = -it.vy * 0.8; it.om -= it.vx * 0.25; }
+    if (it.y + e.hh > H && it.vy > 0){ it.y = H - e.hh; it.vy = -it.vy * 0.8; it.om += it.vx * 0.25; }
+  }
+
+  function isOffScreen(it){
+    var e = halfExtents(it);
+    return it.x + e.hw < 0 || it.x - e.hw > W || it.y + e.hh < 0 || it.y - e.hh > H;
+  }
+
+  function removeItem(it){
+    var i = items.indexOf(it);
+    if (i !== -1) items.splice(i, 1);
+    it.el.remove();
+    scheduleSpawn();
+  }
+
+  function scheduleSpawn(){
+    setTimeout(spawnItem, rand(SPAWN_DELAY[0], SPAWN_DELAY[1]));
+  }
+
+  // A new polaroid falls in from above the top edge.
+  function spawnItem(){
+    var it = makeItem(spawnCount++);
+    it.solid = true;
+    it.entering = true;
+    applySize(it);
+    var e = halfExtents(it);
+    it.x = randX();
+    it.y = -e.hh - SPAWN_MARGIN;
+    it.vx = rand(-3, 3);
+    it.vy = it.fall;
+
+    items.push(it);
+    draw();
+    kick();
+  }
+
+  // Advances the simulation. Returns true while anything is still moving.
+  function step(dt){
+    var fr = Math.pow(FRICTION, dt);
+    var sf = Math.pow(SPIN_FRICTION, dt);
+
+    var grew = false;
+    items.forEach(function(it){
+      var target = it.dragging ? HOLD_GROW : 1;
+      if (Math.abs(target - it.g) > 0.001){
+        it.g += (target - it.g) * Math.min(1, dt * 12);
+        if (Math.abs(target - it.g) <= 0.001) it.g = target;
+        applySize(it);
+        grew = true;
+      }
+    });
+
+    items.forEach(function(it){
+      if (it.dragging) return;
+      it.vx *= fr; it.vy *= fr;
+      it.om += (-UPRIGHT_K * (it.a - it.tilt) - UPRIGHT_D * it.om) * dt; // spring back to its tilt
+      it.om *= sf;
+      if (Math.hypot(it.vx, it.vy) < STOP_SPEED){ it.vx = 0; it.vy = 0; }
+      if (Math.abs(it.a - it.tilt) < 0.05 && Math.abs(it.om) < STOP_SPIN){ it.a = it.tilt; it.om = 0; }
+      var sp = Math.hypot(it.vx, it.vy);
+      if (sp > MAX_SPEED){ it.vx *= MAX_SPEED / sp; it.vy *= MAX_SPEED / sp; }
+      if (!it.entering){
+        var k = Math.min(1, dt * 1.5);
+        it.vy += (it.fall - it.vy) * k;   // ease toward the fall speed
+        it.vx += (0 - it.vx) * k;         // and straight down
+      }
+      it.x += it.vx * dt;
+      it.y += it.vy * dt;
+      it.a += it.om * dt;
+    });
+
+    for (var pass = 0; pass < 2; pass++){
+      for (var i = 0; i < items.length; i++){
+        for (var j = i + 1; j < items.length; j++){
+          collide(items[i], items[j]);
+        }
+      }
+    }
+
+    items.forEach(function(it){
+      if (it.dragging || !it.entering) return;
+      if (isFullyInside(it)){ it.entering = false; return; }
+      if (!isOffScreen(it)) bounceEdges(it);
+    });
+
+    // Polaroids that have fully left the screen are removed, and a replacement is queued.
+    items.slice().forEach(function(it){
+      if (it.dragging) return;
+      if (!isOffScreen(it)) it.entered = true;
+      else if (it.entered) removeItem(it);
+    });
+
+    return grew || items.some(function(it){
+      return it.dragging || it.vx !== 0 || it.vy !== 0 || it.om !== 0;
+    });
+  }
+
+  function draw(){
+    items.forEach(function(it){
+      var tx = it.x - it.FW / 2, ty = it.y - it.FH / 2;
+      it.el.style.transform = "translate3d(" + tx.toFixed(1) + "px," + ty.toFixed(1) + "px,0) rotate(" + it.a.toFixed(2) + "deg)";
+    });
+  }
+
+  // The animation loop runs only while something moves, so resting polaroids stay perfectly still.
+  var running = false, last = 0;
+  function kick(){
+    if (running) return;
+    running = true;
+    last = 0;
+    requestAnimationFrame(frame);
+  }
+  function frame(ts){
+    if (!last) last = ts;
+    var dt = Math.min(0.033, (ts - last) / 1000);
+    last = ts;
+    var moving = step(dt);
+    draw();
+    if (moving) requestAnimationFrame(frame);
+    else running = false;
+  }
+
+  // Dragging: the polaroid follows the pointer and keeps the release speed (a flick).
+  function attachDrag(it){
+    it.el.addEventListener("pointerdown", function(e){
+      e.preventDefault();
+      it.drag = {
+        id: e.pointerId,
+        ox: e.clientX - it.x, oy: e.clientY - it.y,
+        lx: e.clientX, ly: e.clientY, lt: performance.now(),
+        vx: 0, vy: 0
+      };
+      it.el.setPointerCapture(e.pointerId);
+      it.dragging = true;
+      it.vx = 0; it.vy = 0; it.om = 0;
+      it.el.style.zIndex = ++topZ;
+      it.el.classList.add("dragging");
+      kick();
+    });
+    it.el.addEventListener("pointermove", function(e){
+      var d = it.drag;
+      if (!d || e.pointerId !== d.id) return;
+      var now = performance.now();
+      var dt = Math.max(1, now - d.lt) / 1000;
+      var mvx = (e.clientX - d.lx) / dt, mvy = (e.clientY - d.ly) / dt;
+      d.vx = d.vx * 0.5 + mvx * 0.5;
+      d.vy = d.vy * 0.5 + mvy * 0.5;
+      d.lx = e.clientX; d.ly = e.clientY; d.lt = now;
+      it.x = e.clientX - d.ox;
+      it.y = e.clientY - d.oy;
+      draw();
+      kick();
+    });
+    function release(e){
+      var d = it.drag;
+      if (!d || e.pointerId !== d.id) return;
+      var sp = Math.hypot(d.vx, d.vy);
+      if (sp > MAX_SPEED){ d.vx *= MAX_SPEED / sp; d.vy *= MAX_SPEED / sp; }
+      it.vx = d.vx;
+      it.vy = d.vy;
+      it.om = rand(-15, 15);
+      it.drag = null;
+      it.dragging = false;
+      it.el.classList.remove("dragging");
+      kick();
+    }
+    it.el.addEventListener("pointerup", release);
+    it.el.addEventListener("pointercancel", release);
+  }
+
+  // Start with the full set, scattered across the screen.
+  for (var i = 0; i < COUNT; i++){
+    items.push(makeItem(spawnCount++));
+  }
+  layout();
+  place();
+  items.forEach(function(it){ it.entered = true; });
+  draw();
+  if (!REDUCED) kick();
+
+  window.addEventListener("resize", function(){
+    layout();
+    draw();
+    kick();
+  });
+})();
+</script>
+</body>
+</html>
