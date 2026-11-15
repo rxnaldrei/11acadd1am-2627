@@ -180,11 +180,11 @@
 
 <script>
 (function(){
-  var MOBILE = window.matchMedia("(max-width: 700px)").matches;
-  var COUNT = MOBILE ? 24 : 60;         // polaroids at the start (photos repeat to fill this)
+  var MOBILE = Math.min(window.innerWidth, window.innerHeight) <= 500 || window.matchMedia("(pointer: coarse)").matches;
+  var COUNT = MOBILE ? 10 : 60;         // polaroids at the start (photos repeat to fill this)
   var SOLID_SHARE = 0.65;               // share that bump into each other; the rest overlap freely
-  var SPAWN_DELAY = MOBILE ? [900, 1800] : [385, 920];  // ms between new polaroids (the stream never stops)
-  var MAX_ITEMS = MOBILE ? 60 : 150;    // safety limit; the stream slows only if it is ever reached
+  var SPAWN_DELAY = MOBILE ? [2000, 3500] : [385, 920];  // ms between new polaroids (the stream never stops)
+  var MAX_ITEMS = MOBILE ? 14 : 60;     // most polaroids on screen at once
   var SPAWN_MARGIN = 80;                // px above the top edge where new polaroids start
   var HOLD_GROW = 1.12;                 // a held polaroid is this many times bigger
   var PHOTO_FOLDER = "polaroid/";
@@ -303,7 +303,9 @@
     var oldW = W, oldH = H;
     W = stage.clientWidth;
     H = stage.clientHeight;
-    base = Math.min(180, Math.max(40, Math.sqrt(W * H) * 0.075));
+    // Bigger polaroids on phones, smaller on desktop.
+    // Phones: large polaroids (about 140% of the shorter side, 75% bigger than before). Desktop: sized to the screen area.
+    base = MOBILE ? Math.min(1000, Math.min(W, H) * 1.4) : Math.min(180, Math.max(40, Math.sqrt(W * H) * 0.075));
     items.forEach(function(it){
       if (oldW){ it.x *= W / oldW; it.y *= H / oldH; }
       applySize(it);
@@ -341,13 +343,13 @@
   }
 
   function scheduleSpawn(){
-    // Near the limit the stream slows down instead of stopping.
-    var slow = items.length >= MAX_ITEMS ? 3 : 1;
-    setTimeout(spawnItem, rand(SPAWN_DELAY[0], SPAWN_DELAY[1]) * slow);
+    setTimeout(spawnItem, rand(SPAWN_DELAY[0], SPAWN_DELAY[1]));
   }
 
   // A new polaroid falls in from above the top edge.
   function spawnItem(){
+    // At the limit: wait a moment and try again, so a new one comes in as soon as one leaves.
+    if (items.length >= MAX_ITEMS){ setTimeout(spawnItem, 250); return; }
     var it = makeItem(spawnCount++);
     it.solid = true;
     it.entering = true;
