@@ -176,7 +176,7 @@
 
 <script>
 (function(){
-  var COUNT = 28;                       // polaroids on screen (photos repeat to fill this)
+  var COUNT = 60;                       // polaroids on screen (photos repeat to fill this)
   var SOLID_SHARE = 0.65;               // share that bump into each other; the rest overlap freely
   var SPAWN_DELAY = [385, 920];       // ms between new polaroids (the stream never stops)
   var MAX_ITEMS = 70;                   // most polaroids on screen at once
@@ -307,40 +307,6 @@
     });
   }
 
-  // Solid polaroids push each other apart; non-solid ones overlap freely.
-  // A dragged polaroid has infinite mass, so it pushes the others but is not pushed.
-  function collide(a, b){
-    if (!a.solid || !b.solid) return;
-    var ia = a.dragging ? 0 : 1 / a.m;
-    var ib = b.dragging ? 0 : 1 / b.m;
-    var tot = ia + ib;
-    if (tot === 0) return;
-
-    var dx = b.x - a.x, dy = b.y - a.y;
-    var d = Math.hypot(dx, dy);
-    var min = a.rad + b.rad;
-    if (d >= min) return;
-    if (d < 1e-6){ dx = 1; dy = 0; d = 1; }
-    var nx = dx / d, ny = dy / d;
-
-    // Push apart only when clearly overlapping, so resting contacts stay still.
-    var overlap = min - d - 0.5;
-    if (overlap > 0){
-      a.x -= nx * overlap * 0.8 * ia / tot; a.y -= ny * overlap * 0.8 * ia / tot;
-      b.x += nx * overlap * 0.8 * ib / tot; b.y += ny * overlap * 0.8 * ib / tot;
-    }
-
-    var rv = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
-    if (rv < -1){
-      var j = -(1 + PAIR_BOUNCE) * rv / tot;
-      a.vx -= j * nx * ia; a.vy -= j * ny * ia;
-      b.vx += j * nx * ib; b.vy += j * ny * ib;
-      var spin = rand(-40, 40) * Math.min(1, -rv / 200);
-      a.om += spin * ia / tot * 2;
-      b.om -= spin * ib / tot * 2;
-    }
-  }
-
   function isOffScreen(it){
     var e = halfExtents(it);
     return it.x + e.hw < 0 || it.x - e.hw > W || it.y + e.hh < 0 || it.y - e.hh > H;
@@ -401,23 +367,15 @@
       if (Math.abs(it.a - it.tilt) < 0.05 && Math.abs(it.om) < STOP_SPIN){ it.a = it.tilt; it.om = 0; }
       var sp = Math.hypot(it.vx, it.vy);
       if (sp > MAX_SPEED){ it.vx *= MAX_SPEED / sp; it.vy *= MAX_SPEED / sp; }
-      if (!it.entering){
-        var k = Math.min(1, dt * 1.5);
-        it.vy += (it.fall - it.vy) * k;   // ease toward the fall speed
-        it.vx += (0 - it.vx) * k;         // and straight down
-      }
+      // Every polaroid keeps falling, including new ones still entering from above,
+      // so none can stall off the top of the screen.
+      var k = Math.min(1, dt * 1.5);
+      it.vy += (it.fall - it.vy) * k;   // ease toward the fall speed
+      it.vx += (0 - it.vx) * k;         // and straight down
       it.x += it.vx * dt;
       it.y += it.vy * dt;
       it.a += it.om * dt;
     });
-
-    for (var pass = 0; pass < 2; pass++){
-      for (var i = 0; i < items.length; i++){
-        for (var j = i + 1; j < items.length; j++){
-          collide(items[i], items[j]);
-        }
-      }
-    }
 
     // Polaroids that have fully left the screen are removed, and a replacement is queued.
     items.slice().forEach(function(it){
