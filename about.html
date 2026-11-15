@@ -178,11 +178,12 @@
 (function(){
   var COUNT = 28;                       // polaroids on screen (photos repeat to fill this)
   var SOLID_SHARE = 0.65;               // share that bump into each other; the rest overlap freely
-  var SPAWN_DELAY = [1500, 4000];       // ms before a replacement falls in
+  var SPAWN_DELAY = [385, 920];       // ms between new polaroids (the stream never stops)
+  var MAX_ITEMS = 70;                   // most polaroids on screen at once
   var SPAWN_MARGIN = 80;                // px above the top edge where new polaroids start
   var HOLD_GROW = 1.12;                 // a held polaroid is this many times bigger
   var PHOTO_FOLDER = "polaroid/";
-  var PHOTO_EXTS = ["png", "jpeg", "jpg"];
+  var PHOTO_EXTS = ["png", "PNG", "jpeg", "JPEG", "jpg", "JPG"];  // hosts are case-sensitive
   var PHOTO_MAX = 300;
   var PHOTO_GAP = 10;                   // stop after this many numbers in a row with no picture
 
@@ -193,8 +194,8 @@
   var STOP_SPIN = 2;        // deg/s below which spin stops
   var PAIR_BOUNCE = 0.6;    // energy kept after hitting another polaroid
   var MAX_SPEED = 900;      // px/s cap
-  var FALL_MIN = 15;        // px/s slowest fall (rain)
-  var FALL_MAX = 30;        // px/s fastest fall (rain)
+  var FALL_MIN = 21;        // px/s slowest fall (rain)
+  var FALL_MAX = 24;        // px/s fastest fall (rain)
   var UPRIGHT_K = 6;        // how strongly a polaroid springs back to level
   var UPRIGHT_D = 3;        // damping on that spring
   var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -208,8 +209,11 @@
 
   function rand(a, b){ return a + Math.random() * (b - a); }
   // Horizontal position across the whole screen, weighted toward the left.
+  // Polaroids snap to columns (about one polaroid wide), weighted toward the left, so they stack tightly.
   function randX(){
-    return W * Math.pow(Math.random(), 1.7);
+    var cols = Math.max(1, Math.floor(W / (base * 0.9)));
+    var k = Math.min(cols - 1, Math.floor(cols * Math.pow(Math.random(), 1.5)));
+    return (k + 0.5) * W / cols + rand(-base * 0.06, base * 0.06);
   }
 
   // Frame size from the item's scale, shape and hold growth. Scales with the window.
@@ -221,7 +225,7 @@
     var FH = pad + imgH + FW * 0.22;
     it.FW = FW; it.FH = FH;
     it.m = FW * FH;                          // mass
-    it.rad = 0.5 * Math.hypot(FW, FH) * 0.8; // collision radius
+    it.rad = 0.5 * Math.hypot(FW, FH) * 0.62; // collision radius (smaller = more tightly packed)
     it.el.style.width = FW + "px";
     it.el.style.height = FH + "px";
     it.el.style.padding = pad + "px " + pad + "px " + (FW * 0.22) + "px";
@@ -254,8 +258,9 @@
       el: el, ph: ph,
       ratio: 1,
       index: i,
+      hasPhoto: false,
       img: img,
-      s: rand(0.6, 1.4),
+      s: rand(0.45, 1.35),
       g: 1,
       solid: Math.random() < SOLID_SHARE,
       x: 0, y: 0, tilt: rand(-9, 9), a: 0,
@@ -276,7 +281,7 @@
     var oldW = W, oldH = H;
     W = stage.clientWidth;
     H = stage.clientHeight;
-    base = Math.min(260, Math.max(56, Math.sqrt(W * H) * 0.11));
+    base = Math.min(180, Math.max(40, Math.sqrt(W * H) * 0.075));
     items.forEach(function(it){
       if (oldW){ it.x *= W / oldW; it.y *= H / oldH; }
       applySize(it);
@@ -336,20 +341,6 @@
     }
   }
 
-  function isFullyInside(it){
-    var e = halfExtents(it);
-    return it.x - e.hw >= 0 && it.x + e.hw <= W && it.y - e.hh >= 0 && it.y + e.hh <= H;
-  }
-
-  // The screen edges act as walls for a new polaroid while it is entering; it bounces back if it hits an edge going outward.
-  function bounceEdges(it){
-    var e = halfExtents(it);
-    if (it.x - e.hw < 0 && it.vx < 0){ it.x = e.hw; it.vx = -it.vx * 0.8; it.om += it.vy * 0.25; }
-    if (it.x + e.hw > W && it.vx > 0){ it.x = W - e.hw; it.vx = -it.vx * 0.8; it.om -= it.vy * 0.25; }
-    if (it.y - e.hh < 0 && it.vy < 0){ it.y = e.hh; it.vy = -it.vy * 0.8; it.om -= it.vx * 0.25; }
-    if (it.y + e.hh > H && it.vy > 0){ it.y = H - e.hh; it.vy = -it.vy * 0.8; it.om += it.vx * 0.25; }
-  }
-
   function isOffScreen(it){
     var e = halfExtents(it);
     return it.x + e.hw < 0 || it.x - e.hw > W || it.y + e.hh < 0 || it.y - e.hh > H;
@@ -359,7 +350,6 @@
     var i = items.indexOf(it);
     if (i !== -1) items.splice(i, 1);
     it.el.remove();
-    scheduleSpawn();
   }
 
   function scheduleSpawn(){
@@ -368,11 +358,12 @@
 
   // A new polaroid falls in from above the top edge.
   function spawnItem(){
+    if (items.length >= MAX_ITEMS){ scheduleSpawn(); return; }
     var it = makeItem(spawnCount++);
     it.solid = true;
     it.entering = true;
     applySize(it);
-    attachPhoto(it);
+    if (photos.length) attachPhoto(it, photos[it.index % photos.length]);
     var e = halfExtents(it);
     it.x = randX();
     it.y = -e.hh - SPAWN_MARGIN;
@@ -382,6 +373,7 @@
     items.push(it);
     draw();
     kick();
+    scheduleSpawn();
   }
 
   // Advances the simulation. Returns true while anything is still moving.
@@ -426,12 +418,6 @@
         }
       }
     }
-
-    items.forEach(function(it){
-      if (it.dragging || !it.entering) return;
-      if (isFullyInside(it)){ it.entering = false; return; }
-      if (!isOffScreen(it)) bounceEdges(it);
-    });
 
     // Polaroids that have fully left the screen are removed, and a replacement is queued.
     items.slice().forEach(function(it){
@@ -533,20 +519,23 @@
     }
     return null;
   }
-  async function collectPhotos(){
+  async function collectPhotos(onFound){
     var list = [], misses = 0;
     for (var n = 1; n <= PHOTO_MAX && misses < PHOTO_GAP; n++){
       var photo = await findPhoto(n);
-      if (photo){ list.push(photo); misses = 0; }
+      if (photo){
+        list.push(photo);
+        misses = 0;
+        if (onFound) onFound(photo);
+      }
       else misses++;
     }
     return list;
   }
 
   // Give a polaroid its photo; it fades in once the image has loaded.
-  function attachPhoto(it){
-    if (!photos.length) return;
-    var photo = photos[it.index % photos.length];
+  function attachPhoto(it, photo){
+    it.hasPhoto = true;
     it.ratio = photo.ratio;
     it.img.onload = function(){ it.img.classList.add("loaded"); };
     it.img.src = photo.url;
@@ -560,6 +549,7 @@
     items.forEach(function(it){ it.entered = true; });
     draw();
     if (!REDUCED) kick();
+    scheduleSpawn();
 
     window.addEventListener("resize", function(){
       layout();
@@ -567,9 +557,15 @@
       kick();
     });
 
-    collectPhotos().then(function(list){
-      photos = list;
-      items.forEach(attachPhoto);
+    collectPhotos(function(photo){
+      photos.push(photo);
+      var waiting = items.find(function(it){ return !it.hasPhoto; });
+      if (waiting) attachPhoto(waiting, photo);
+    }).then(function(){
+      // Anything still waiting once the folder is done gets the photos in turn.
+      items.forEach(function(it){
+        if (!it.hasPhoto && photos.length) attachPhoto(it, photos[it.index % photos.length]);
+      });
     });
   }
 
