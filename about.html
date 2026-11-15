@@ -202,6 +202,7 @@
 
   var stage = document.getElementById("stage");
   var photos = [];
+  var uses = [];                       // how many polaroids show each photo
   var items = [];
   var W = 0, H = 0, base = 0;
   var topZ = 10;
@@ -329,7 +330,7 @@
     it.solid = true;
     it.entering = true;
     applySize(it);
-    if (photos.length) attachPhoto(it, photos[it.index % photos.length]);
+    attachPhoto(it);
     var e = halfExtents(it);
     it.x = randX();
     it.y = -e.hh - SPAWN_MARGIN;
@@ -492,9 +493,24 @@
   }
 
   // Give a polaroid its photo; it fades in once the image has loaded.
-  function attachPhoto(it, photo){
+  // Pick the photo shown least often so far (ties broken at random).
+  function pickIndex(){
+    var min = Infinity;
+    uses.forEach(function(u){ if (u < min) min = u; });
+    var options = [];
+    uses.forEach(function(u, i){ if (u === min) options.push(i); });
+    return options[Math.floor(Math.random() * options.length)];
+  }
+
+  function attachPhoto(it){
+    if (!photos.length) return;
+    var idx = pickIndex();
+    var photo = photos[idx];
+    uses[idx]++;
     it.hasPhoto = true;
     it.ratio = photo.ratio;
+    // A different crop of the same photo, so repeats look less alike.
+    it.img.style.objectPosition = Math.round(rand(15, 85)) + "% " + Math.round(rand(15, 85)) + "%";
     it.img.onload = function(){ it.img.classList.add("loaded"); };
     it.img.src = photo.url;
     applySize(it);
@@ -517,12 +533,13 @@
 
     collectPhotos(function(photo){
       photos.push(photo);
+      uses.push(0);
       var waiting = items.find(function(it){ return !it.hasPhoto; });
-      if (waiting) attachPhoto(waiting, photo);
+      if (waiting) attachPhoto(waiting);
     }).then(function(){
-      // Anything still waiting once the folder is done gets the photos in turn.
+      // Anything still waiting once the folder is done gets a photo too.
       items.forEach(function(it){
-        if (!it.hasPhoto && photos.length) attachPhoto(it, photos[it.index % photos.length]);
+        if (!it.hasPhoto) attachPhoto(it);
       });
     });
   }
