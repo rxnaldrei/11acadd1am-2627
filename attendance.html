@@ -41,33 +41,56 @@
 input{-webkit-user-select:text;-moz-user-select:text;-ms-user-select:text;user-select:text}
 html{background:#05060a;min-height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
 html,body{overflow-x:hidden}
-body{margin:0;position:relative;isolation:isolate;background:transparent;color:var(--label);
+body{margin:0;position:relative;background:transparent;color:var(--label);
   font-family:"SF Pro Text",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
   font-weight:500;font-size:17px;line-height:1.3;-webkit-font-smoothing:antialiased;
   padding-bottom:env(safe-area-inset-bottom,0px)}
 /* Commuters Sans only for the class/year label. */
 .class-title{font-family:"Commuters Sans Bold","SF Pro Text",sans-serif!important;font-weight:700!important}
 
-/* Blurred aurora confined to the top of the viewport, fading into a dark base beneath it */
-html{background:#05060a}
-body::before{content:"";position:fixed;z-index:-2;inset:0;pointer-events:none;background:#05060a}
-body::after{content:"";position:fixed;z-index:-1;left:-22%;right:-22%;top:-22%;height:85vh;pointer-events:none;background:
-  radial-gradient(ellipse at 15% 16%,rgba(111,20,63,.78) 0%,rgba(111,20,63,0) 42%),
-  radial-gradient(ellipse at 79% 18%,rgba(112,65,31,.72) 0%,rgba(112,65,31,0) 39%),
-  radial-gradient(ellipse at 18% 78%,rgba(43,23,112,.88) 0%,rgba(43,23,112,0) 43%),
-  radial-gradient(ellipse at 78% 78%,rgba(12,49,72,.82) 0%,rgba(12,49,72,0) 42%),
-  radial-gradient(ellipse at 49% 45%,rgba(63,22,64,.38) 0%,rgba(63,22,64,0) 45%),
-  linear-gradient(145deg,#21101d 0%,#151022 48%,#081722 100%);
-  background-size:145% 145%;filter:blur(62px) saturate(125%);opacity:.96;
-  -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 45%,transparent 92%);
-  mask-image:linear-gradient(to bottom,#000 0%,#000 45%,transparent 92%);
-  transform:translate3d(0,0,0);will-change:transform;animation:auroraDrift 22s ease-in-out infinite alternate}
-@keyframes auroraDrift{0%{background-position:0% 10%;transform:translate3d(-2%,1%,0) scale(1)}35%{background-position:85% 15%;transform:translate3d(2%,-1%,0) scale(1.08)}70%{background-position:40% 95%;transform:translate3d(-1%,2%,0) scale(1.03)}100%{background-position:100% 60%;transform:translate3d(2%,0,0) scale(1.1)}}
-@media (prefers-reduced-motion:reduce){body::after{animation:none}}
-@media (max-width:700px){
-  /* Keep both page and login backgrounds static on phones to reduce repaint/compositing load. */
-  body::after{animation:none;filter:blur(40px) saturate(125%);transform:none;background-position:50% 50%;will-change:auto}
-  #password-gate::before{animation:none!important;filter:blur(40px) saturate(125%);transform:none!important;background-position:50% 50%;will-change:auto}
+/* Blurred aurora confined to the top of the viewport, fading into a dark base beneath it (same as index.html) */
+html { background: #05060a; }
+body::before { content: ""; position: fixed; z-index: -2; inset: 0; pointer-events: none; background: #05060a; }
+body::after {
+  content: "";
+  position: fixed;
+  z-index: -1;
+  left: -22%;
+  right: -22%;
+  top: -22%;
+  height: 85vh;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 15% 16%, rgba(111,20,63,.78) 0%, rgba(111,20,63,0) 42%),
+    radial-gradient(ellipse at 79% 18%, rgba(112,65,31,.72) 0%, rgba(112,65,31,0) 39%),
+    radial-gradient(ellipse at 18% 78%, rgba(43,23,112,.88) 0%, rgba(43,23,112,0) 43%),
+    radial-gradient(ellipse at 78% 78%, rgba(12,49,72,.82) 0%, rgba(12,49,72,0) 42%),
+    radial-gradient(ellipse at 49% 45%, rgba(63,22,64,.38) 0%, rgba(63,22,64,0) 45%),
+    linear-gradient(145deg, #21101d 0%, #151022 48%, #081722 100%);
+  background-size: 145% 145%;
+  background-position: 50% 30%;
+  filter: blur(62px) saturate(125%);
+  opacity: .96;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 45%, transparent 92%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 45%, transparent 92%);
+  transform: translate3d(0,0,0);
+  animation: auroraDrift 22s ease-in-out infinite alternate;
+}
+@keyframes auroraDrift {
+  0% { transform: translate3d(-3%,1%,0) scale(1.05); }
+  35% { transform: translate3d(3%,-1.5%,0) scale(1.12); }
+  70% { transform: translate3d(-1.5%,2%,0) scale(1.08); }
+  100% { transform: translate3d(2.5%,-0.5%,0) scale(1.14); }
+}
+@media (prefers-reduced-motion: reduce) {
+  body::after { animation: none; }
+}
+@media (max-width: 700px) {
+  body::after {
+    animation: none;
+    transform: translate3d(-1%, 0.5%, 0) scale(1.08);
+    will-change: auto;
+  }
 }
 button,input{font:inherit;color:inherit}
 button{cursor:pointer;border:0;background:none;touch-action:manipulation}
@@ -89,6 +112,11 @@ h1{margin:0;font-size:clamp(25px,6vw,34px);font-weight:700;letter-spacing:-.8px;
   background:var(--s-chip);border:1px solid var(--s-border);color:var(--label);font-size:13px;font-weight:600;
   -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
 .view-badge svg{width:16px;height:16px;display:block;flex:none}
+.back-btn{flex:0 0 auto;width:38px;height:38px;margin-top:0;border-radius:50%;display:grid;place-items:center;
+  background:var(--s-chip);border:1px solid var(--s-border);color:var(--blue);text-decoration:none;
+  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.back-btn svg{width:18px;height:18px;display:block}
+.back-btn:active{background:var(--fill)}
 
 .search{margin-top:18px;display:flex;align-items:center;gap:8px;min-height:44px;background:var(--s-field);border:1px solid var(--s-border);
   border-radius:16px;padding:0 12px;-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
@@ -99,6 +127,7 @@ h1{margin:0;font-size:clamp(25px,6vw,34px);font-weight:700;letter-spacing:-.8px;
 .date-row{margin-top:14px;display:flex;align-items:center;justify-content:center;gap:4px}
 .chev{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:var(--blue);font-size:24px;line-height:1}
 .chev:active{background:var(--fill)}
+.chev svg{width:18px;height:18px;display:block}
 .date-row input{background:var(--s-chip);border:1px solid var(--s-border);border-radius:11px;padding:7px 10px;font-size:16px;min-width:0;height:36px}
 .today-btn{color:var(--blue);font-size:16px;padding:8px 10px;border-radius:8px;margin-left:2px}
 .today-btn:active{background:var(--fill)}
@@ -184,12 +213,6 @@ main{padding-top:46px;padding-bottom:calc(120px + env(safe-area-inset-bottom,0px
     --s-border:rgba(0,0,0,.06); --s-nav-border:rgba(0,0,0,.08);
   }
   .nav,.glass,.search,.view-badge,.toast,.date-row input{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
-  /* Static aurora: no animation, no blur filter, scrolls with the page instead of being re-composited */
-  body::before{position:absolute;inset:0}
-  body::after{position:absolute;left:-8%;right:-8%;top:0;height:480px;filter:none;transform:none;animation:none;
-    background-size:100% 100%;background-position:50% 50%;will-change:auto;
-    -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 45%,transparent 100%);
-    mask-image:linear-gradient(to bottom,#000 0%,#000 45%,transparent 100%)}
   .nav{transition:none}
   .nav .wrap{padding-top:16px;padding-bottom:18px}
   .glass{contain:layout paint}
@@ -276,14 +299,6 @@ main{padding-top:46px;padding-bottom:calc(120px + env(safe-area-inset-bottom,0px
   .view-badge,.date-row input{background:#2a2b34!important;border-color:rgba(255,255,255,.10)!important}
   .nav{background:rgba(22,24,35,.92)!important;box-shadow:none!important;transition:none!important}
   .toast{background:#23242c!important}
-  body::before{position:absolute;inset:0}
-  body::after{
-    position:absolute;left:-8%;right:-8%;top:0;height:480px;
-    filter:none!important;transform:none!important;animation:none!important;
-    background-size:100% 100%;background-position:50% 50%;will-change:auto;
-    -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 45%,transparent 100%);
-    mask-image:linear-gradient(to bottom,#000 0%,#000 45%,transparent 100%);
-  }
   .nav .wrap{padding-top:16px;padding-bottom:18px}
   *{scroll-behavior:auto!important}
 }
@@ -302,7 +317,7 @@ main{padding-top:46px;padding-bottom:calc(120px + env(safe-area-inset-bottom,0px
 .titlebar{justify-content:flex-start}
 .title-stack{align-items:flex-start}
 .search{margin-top:12px}
-main.wrap{padding-top:26px}
+main.wrap{padding-top:12px}
 .date-panel{margin-bottom:16px;padding:8px 12px;border-radius:22px}
 .date-row{margin-top:0;justify-content:flex-end;gap:4px}
 @media(max-width:700px){
@@ -314,23 +329,6 @@ main.wrap{padding-top:26px}
 }
 
 
-/* Fix viewport-dependent aurora cutoff: size the static mobile background to the
-   actual visible viewport and fade it smoothly into the dark page base. */
-@media (max-width:700px){
-  body{min-height:100vh;min-height:100dvh;background:#05060a}
-  body::before{position:absolute;inset:0;background:#05060a}
-  body::after{
-    position:absolute!important;
-    top:0!important;left:-8%!important;right:-8%!important;
-    width:auto!important;height:100vh!important;height:100dvh!important;
-    min-height:520px;
-    filter:none!important;transform:none!important;animation:none!important;
-    background-size:100% 100%!important;background-position:50% 50%!important;
-    will-change:auto!important;
-    -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 38%,rgba(0,0,0,.82) 58%,rgba(0,0,0,.35) 78%,transparent 100%)!important;
-    mask-image:linear-gradient(to bottom,#000 0%,#000 38%,rgba(0,0,0,.82) 58%,rgba(0,0,0,.35) 78%,transparent 100%)!important;
-  }
-}
 
 
 /* Consistent alignment at every viewport width. */
@@ -358,6 +356,46 @@ main.wrap{padding-top:26px}
 @media(max-width:700px){#initial-loader{-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)} #initial-loader .loader-card{padding:20px 22px}}
 @media(prefers-reduced-motion:reduce){#initial-loader{transition:none}}
 
+/* Date bar on the left, present/late/absent counters on the right */
+.toolbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px}
+.toolbar .date-panel{width:auto;margin:0;padding:6px 8px;flex:0 0 auto}
+.toolbar .stats{margin-top:0;grid-template-columns:repeat(3,auto);flex:0 0 auto}
+.toolbar .stat{padding:8px 14px}
+.toolbar .stat b{font-size:20px}
+.toolbar .stat span{font-size:12px}
+@media(max-width:700px){
+  .toolbar{flex-direction:column;align-items:stretch;gap:10px}
+  .toolbar .date-panel{width:100%;padding:8px}
+  .toolbar .stats{width:100%;grid-template-columns:repeat(3,1fr)}
+  .toolbar .stat{padding:10px 6px}
+  .toolbar .stat b{font-size:20px}
+}
+/* Page stays fixed; only the student list scrolls inside itself */
+html,body{height:100%;overflow:hidden}
+body{height:100vh;height:100dvh;display:flex;flex-direction:column}
+.nav{flex:0 0 auto}
+main.wrap{flex:1 1 auto;min-height:0;width:100%;display:flex;flex-direction:column;padding-bottom:0}
+.toolbar{flex:0 0 auto}
+#loadState{flex:1 1 auto}
+#content{flex:1 1 auto;min-height:0;flex-direction:column}
+#content .section-head{flex:0 0 auto}
+/* Three columns share the available height; each list scrolls on its own */
+#content .cols{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+  grid-template-rows:minmax(0,1fr);align-items:stretch;gap:var(--gap);overflow:visible;
+  padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))}
+#content .cols > .glass{display:flex;flex-direction:column;min-height:0;overflow:hidden}
+#content .col-head{flex:0 0 auto}
+#content .col-list{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+@media (max-width:700px){
+  #content .cols{grid-template-columns:minmax(0,1fr);grid-template-rows:repeat(3,minmax(0,1fr))}
+}
+
+/* Tighter spacing between the counters and the student lists */
+.toolbar{margin-bottom:0}
+#content .section-head{margin:10px 4px 8px}
+
+/* Back button sits closer to the heading */
+.titlebar{gap:8px!important;align-items:center!important}
 </style>
 </head>
 <body>
@@ -368,13 +406,12 @@ main.wrap{padding-top:26px}
 <header class="nav" id="nav">
   <div class="wrap">
     <div class="titlebar">
+      <a class="back-btn" href="index.html" aria-label="Back to home">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+      </a>
       <div class="title-stack">
         <h1>Attendance</h1>
         <div class="subtitle class-title">11-ACAD D-1AM <span aria-hidden="true">·</span> 2026–2027</div>
-      </div>
-      <div class="view-badge" title="Read-only — viewing attendance records">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
-        View only
       </div>
     </div>
     <label class="search">
@@ -385,20 +422,22 @@ main.wrap{padding-top:26px}
 </header>
 
 <main class="wrap">
+  <div class="toolbar">
   <div class="glass date-panel">
     <div class="date-row">
-      <button class="chev" id="prevDay" aria-label="Previous day">‹</button>
+      <button class="chev" id="prevDay" aria-label="Previous day"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
       <input type="date" id="date" aria-label="Date">
-      <button class="chev" id="nextDay" aria-label="Next day">›</button>
+      <button class="chev" id="nextDay" aria-label="Next day"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
       <button class="today-btn" id="todayBtn">Today</button>
     </div>
+  </div>
+  <div class="glass stats" id="stats" aria-live="polite"></div>
   </div>
   <div id="loadState" class="load-state">
     <div class="spinner"></div>
     <div>Loading attendance…</div>
   </div>
   <div id="content" style="display:none">
-    <div class="glass stats" id="stats" aria-live="polite"></div>
     <div class="section-head" id="dayLabel"></div>
     <div class="cols" id="cols"></div>
   </div>
@@ -466,14 +505,16 @@ main.wrap{padding-top:26px}
     }).sort();
   }
   function lastRecordedDate(){ return recordedDates.length ? recordedDates[recordedDates.length - 1] : null; }
-  // Weekends are skipped: land on the most recent recorded date instead (or the nearest weekday).
+  // Only recorded dates are reachable: an unrecorded date snaps to the nearest recorded one.
   function landOnValidDate(d){
-    if (!isWeekend(d)) return d;
-    var last = lastRecordedDate();
-    if (last) return last;
-    var fallback = d, i = 0;
-    while (isWeekend(fallback) && i++ < 7) fallback = shift(fallback, -1);
-    return fallback;
+    if (!recordedDates.length || recordedDates.indexOf(d) !== -1) return d;
+    var target = new Date(d + "T00:00:00").getTime();
+    var best = recordedDates[0], bestDist = Infinity;
+    recordedDates.forEach(function(r){
+      var dist = Math.abs(new Date(r + "T00:00:00").getTime() - target);
+      if (dist < bestDist){ bestDist = dist; best = r; }
+    });
+    return best;
   }
 
   function renderStats(d){
@@ -526,6 +567,7 @@ main.wrap{padding-top:26px}
       var list = groups[c.key];
       html += '<div class="glass">';
       html += '<div class="col-head ' + c.cls + '">' + c.label + ' <span class="col-count">' + list.length + '</span></div>';
+      html += '<div class="col-list">';
       if (!list.length){
         html += '<div class="empty">No students</div>';
       } else {
@@ -533,7 +575,7 @@ main.wrap{padding-top:26px}
           html += '<div class="row ' + c.cls + '"><span class="dot"></span><span class="name">' + escapeHtml(n) + '</span></div>';
         });
       }
-      html += '</div>';
+      html += '</div></div>';
     });
     $("cols").innerHTML = html;
   }
@@ -553,14 +595,12 @@ main.wrap{padding-top:26px}
 
   $("date").addEventListener("change", function(){ if (this.value) setDate(this.value); });
   $("prevDay").addEventListener("click", function(){
-    var d = shift(current, -1);
-    while (isWeekend(d)) d = shift(d, -1);
-    setDate(d);
+    var earlier = recordedDates.filter(function(r){ return r < current; });
+    if (earlier.length) setDate(earlier[earlier.length - 1]);
   });
   $("nextDay").addEventListener("click", function(){
-    var d = shift(current, 1);
-    while (isWeekend(d)) d = shift(d, 1);
-    setDate(d);
+    var later = recordedDates.filter(function(r){ return r > current; });
+    if (later.length) setDate(later[0]);
   });
   $("todayBtn").addEventListener("click", function(){ setDate(iso(new Date())); });
   $("query").addEventListener("input", function(){ query = this.value; scheduleRender(); });
@@ -662,7 +702,7 @@ main.wrap{padding-top:26px}
       render();
       dismissInitialLoader();
       $("loadState").style.display = "none";
-      $("content").style.display = "block";
+      $("content").style.display = "flex";
       fabDone(true);
       if (showToast) toast("Attendance refreshed from Google Sheets");
     }
