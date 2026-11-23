@@ -303,8 +303,13 @@
     W = stage.clientWidth;
     H = stage.clientHeight;
     // Bigger polaroids on phones, smaller on desktop.
-    // Phones: small enough that the largest polaroid (scale 1.35) stays well inside the screen width. Desktop: sized to the screen area.
-    base = MOBILE ? Math.max(50, Math.min(Math.min(W, H) * 0.16, W * 0.17)) : Math.min(180, Math.max(40, Math.sqrt(W * H) * 0.075));
+    // Phones: base is about 12% of the screen width, so even the largest polaroid (scale 1.35) is about 16% of the width. Desktop: sized to the screen area.
+    if (MOBILE || Math.min(W, H) <= 600){
+      // Small screens: about 12% of the screen width, kept between 40px and 56px whatever the pixel density.
+      base = Math.max(40, Math.min(56, Math.min(Math.min(W, H) * 0.12, W * 0.13)));
+    } else {
+      base = Math.min(180, Math.max(40, Math.sqrt(W * H) * 0.075));
+    }
     items.forEach(function(it){
       if (oldW){ it.x *= W / oldW; it.y *= H / oldH; }
       applySize(it);
