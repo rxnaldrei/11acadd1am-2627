@@ -7,11 +7,22 @@
 <meta name="description" content="About our section and students.">
 <link rel="icon" type="image/png" href="./favicon.png">
 
+<script>
+  // Turns off blur only on very weak devices (2 or fewer CPU cores, or 2GB or less memory).
+  if ((navigator.hardwareConcurrency || 8) <= 2 || (navigator.deviceMemory || 8) <= 2) {
+    document.documentElement.classList.add('low-end');
+  }
+</script>
 <style>
+@font-face{font-family:"SF Pro Text";src:url("SF-Pro-Text-Medium.otf") format("opentype");font-style:normal;font-weight:500;font-display:swap}
+@font-face{font-family:"SF Pro Text";src:url("SF-Pro-Text-Bold.otf") format("opentype");font-style:normal;font-weight:700;font-display:swap}
+@font-face{font-family:"SF Pro Text";src:url("SF-Pro-Text-Heavy.otf") format("opentype");font-style:normal;font-weight:800;font-display:swap}
+@font-face{font-family:"SF Pro Text";src:url("SF-Pro-Text-Black.otf") format("opentype");font-style:normal;font-weight:900;font-display:swap}
+
   html { background: #05060a; }
   html, body { margin: 0; padding: 0; height: 100%; }
   body {
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
+    font-family: "SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     color: #f5f5f7;
     position: relative;
     height: 100vh;
@@ -91,11 +102,25 @@
   .back-btn svg { width: 18px; height: 18px; display: block; }
   .back-btn:active { background: rgba(120,120,128,.24); }
   @media (max-width: 700px) {
-    .back-btn { -webkit-backdrop-filter: none; backdrop-filter: none; background: #1c1c1e; }
+    .back-btn { background: rgba(22,24,35,.85); }
   }
 
+  #panel { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .panel-inner { padding: 48px 40px; color: #f2f2f7; }
+  .panel-title { margin: 0 0 16px; font-size: 34px; font-weight: 700; letter-spacing: -.5px; }
+  .panel-text { margin: 0; font-size: 19px; line-height: 1.5; color: rgba(242,242,247,.85); }
+  @media (max-width: 700px) {
+    .panel-inner { padding: 28px 24px; }
+    .panel-title { font-size: 26px; }
+    .panel-text { font-size: 16px; }
+  }
   /* Polaroids: positioned and rotated by the physics script, draggable */
   /* Polaroids use the whole screen; the frosted panel sits over part of them */
+  /* Low-end devices (set by the script in <head>): no blur at all, solid panel */
+  .low-end body::after { filter: none; }
+  .low-end #panel, .low-end .back-btn { -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .low-end #panel { background: #07080d; }
+  .low-end .back-btn { background: #1c1c1e; }
   #stage { position: fixed; left: 0; top: 0; width: 100%; height: 100%; z-index: 1; overflow: hidden; }
   /* Frosted panel: right half on desktop, bottom half on mobile */
   #panel {
@@ -120,9 +145,9 @@
       height: 50%;
       border-left: 0;
       border-top: 1px solid rgba(255,255,255,.08);
-      background: #07080d;
-      -webkit-backdrop-filter: none;
-      backdrop-filter: none;
+      background: rgba(10,11,17,.6);
+      -webkit-backdrop-filter: blur(14px);
+      backdrop-filter: blur(14px);
     }
   }
   .polaroid {
@@ -166,7 +191,7 @@
   @media (max-width: 700px) {
     .polaroid, .polaroid.dragging { box-shadow: none; }
     /* Lag fixes on phones: drop the costly blur on the background glow and the noise texture on photos */
-    body::after { filter: none; }
+    body::after { filter: blur(24px) saturate(125%); }
     .polaroid { will-change: auto; }
     .polaroid .placeholder { background-image: none; background-color: #1c1c1e; }
   }
@@ -179,7 +204,12 @@
 </a>
 
 <div id="stage" aria-label="Polaroid photos"></div>
-<div id="panel" aria-hidden="true"></div>
+<div id="panel">
+  <div class="panel-inner">
+    <h1 class="panel-title">About Us</h1>
+    <p class="panel-text">We are 11-ACAD D1, the best section ever!</p>
+  </div>
+</div>
 
 <script>
 (function(){
