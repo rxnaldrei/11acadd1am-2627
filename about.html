@@ -165,6 +165,10 @@
   .polaroid .photo.loaded { opacity: 1; }
   @media (max-width: 700px) {
     .polaroid, .polaroid.dragging { box-shadow: none; }
+    /* Lag fixes on phones: drop the costly blur on the background glow and the noise texture on photos */
+    body::after { filter: none; }
+    .polaroid { will-change: auto; }
+    .polaroid .placeholder { background-image: none; background-color: #1c1c1e; }
   }
 </style>
 </head>
@@ -305,8 +309,8 @@
     // Bigger polaroids on phones, smaller on desktop.
     // Phones: base is about 12% of the screen width, so even the largest polaroid (scale 1.35) is about 16% of the width. Desktop: sized to the screen area.
     if (MOBILE || Math.min(W, H) <= 600){
-      // Small screens: about 12% of the screen width, kept between 40px and 56px whatever the pixel density.
-      base = Math.max(40, Math.min(56, Math.min(Math.min(W, H) * 0.12, W * 0.13)));
+      // Small screens: about 15% of the screen width, kept between 50px and 70px whatever the pixel density.
+      base = Math.max(50, Math.min(70, Math.min(Math.min(W, H) * 0.15, W * 0.1625)));
     } else {
       base = Math.min(180, Math.max(40, Math.sqrt(W * H) * 0.075));
     }
